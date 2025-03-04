@@ -51,5 +51,3 @@ python Melina_bot.py
 ## Contributing
 Feel free to fork this repository and submit pull requests for any improvements!
 
-## License
-[Add your chosen license here]
