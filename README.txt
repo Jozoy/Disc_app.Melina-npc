@@ -1,6 +1,5 @@
-## Hello 
-##Melina bot
 
+# Melina Bot
 
 Melina Bot is a simple, fun, and interactive Discord bot designed for friends, inspired by the NPC **Melina** from *Elden Ring*. As a huge *Souls* fan, this bot is here to enhance your Discord experience with helpful responses, jokes, and more!
 
@@ -10,11 +9,6 @@ Melina Bot is a simple, fun, and interactive Discord bot designed for friends, i
 - Fun interactions, inspired by the world of Elden Ring
 - A helpful companion for your Discord server
 - Private messaging support using '?' prefix
-
-## Prerequisites
-- Python 3.8 or higher
-- A Discord account and bot token
-- Git (for cloning the repository)
 
 ## Installation
 1. Clone this repository:
@@ -52,4 +46,3 @@ python Melina_bot.py
 
 ## Contributing
 Feel free to fork this repository and submit pull requests for any improvements!
-
