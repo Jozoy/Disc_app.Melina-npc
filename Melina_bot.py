@@ -4,9 +4,10 @@ from discord import Intents, Client, Message
 from dotenv import load_dotenv
 from responses import get_response
 
-# Loads the token from somewhere
+# Loads the token from somewhere and Guild ID
 load_dotenv(override=True)
 TOKEN: Final = os.getenv("DISCORD_TOKEN")
+GUILD_ID: Final = os.getenv("GUILD")
 
 # bot setup, the basics
 intents: Intents = Intents.default()
