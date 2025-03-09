@@ -1,62 +1,204 @@
 import os
+import discord
+import random
 from typing import Final
-from discord import Intents, Client, Message
+from discord.ext import commands
+from discord import Intents, Message, app_commands
 from dotenv import load_dotenv
-from responses import get_response
+from random import choice, randint
 
 # Loads the token from somewhere and Guild ID
 load_dotenv(override=True)
 TOKEN: Final = os.getenv("DISCORD_TOKEN")
+GUILD_ID = int(os.getenv("GUILD"))  # This should be your test server ID
 
 # bot setup, the basics
 intents: Intents = Intents.default()
 intents.message_content = True
-client: Client = Client(intents=intents)
+
+bot = commands.Bot(command_prefix="m!", intents=intents)
+
+# Main bosses with short responses
+BOSS_RESPONSES = {
+    "margit": "Fell Omen, vanquished.",
+    "godrick": "The Grafted is no more.",
+    "rennala": "Queen of the Full Moon fades.",
+    "radahn": "Stars resume their course.",
+    "morgott": "The Veiled Monarch falls.",
+    "firegiant": "The flame awaits.",
+    "godskinduo": "The duo falls silent.",
+    "maliketh": "Destined Death returns.",
+    "gideon": "All-Knowing, silenced.",
+    "godfrey": "First Lord, bested.",
+    "radabeast": "The hammer shatters. You are Elden Lord.",
+    "DBDL": "The Divine Dancing Lion rests.",
+    "rellana": "The protector returns to slumber.",
+    "goldenhippo": "The Golden Hippopotamus sinks beneath the waters.",
+    "messmer": "Messmer's light fades to darkness.",
+    "gaius": "Gaius, the Golden Knight, falls.",
+    "scadutree": "The Avatar withers and crumbles.",
+    "putrescent": "The Putrescent Knight's corruption is cleansed.",
+    "midra": "Midra's final flame extinguished.",
+    "bayle": "Bayle's strength was not enough.",
+    "metyr": "Metyr returns to the shadows.",
+    "romina": "Romina's final song ends.",
+    "leda": "The Needle Knight's precision falters.",
+    "pcr": "The Promised Consort falls beneath your might."
+}
+
+# Giving credit or append
+GIVING_CREDIT = [
+    "Well done, Tarnished.",
+    "You have my gratitude.",
+    "A fine display of strength.",
+    "You walk with purpose.",
+    "May your path be ever guided.",
+    "You are worthy.",
+    "Your resolve is strong.",
+    "Grace is with you.",
+    "I acknowledge your strength.",
+    "You have done well."
+]
 
 
-# message functionality
-async def send_message(message: Message, user_message: str) -> None:
-    if not user_message:
-        print("(Message was empty, because intents were not enabled, probably)")
-        return
+# TEST 
+# Prefix command
+@bot.command()
+async def hello(ctx):
+    await ctx.send("Hello, Fellow member")
 
-    if is_private := user_message[0] == "?":
-        user_message = user_message[1:]
+# Slash command TEST
+@bot.tree.command(
+    name="hello", 
+    description="melina greets you",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def hello(interaction: discord.Interaction):
+    user_name = interaction.user.mention
+    await interaction.response.send_message(f"Greetings, {user_name} the Tarnished. ")
 
+#1
+@bot.tree.command(
+    name="how are you", 
+    description="ask melina how her day is",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def hru(interaction: discord.Interaction):
+    await interaction.response.send_message("I am doing good, thank you for asking Tarnished")
+
+#2
+@bot.tree.command(
+    name="are you there", 
+    description="is melina with you?",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def are_you_there(interaction: discord.Interaction):
+    await interaction.response.send_message("I am here and with you Tarnished")
+
+# 3
+@bot.tree.command(
+    name="farewell", 
+    description="say your goodbye to melina your maiden",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def farewell(interaction: discord.Interaction):
+    await interaction.response.send_message("May your path be clear and farewell.")
+
+# 4
+@bot.tree.command(
+    name="tarnished arrived", 
+    description="nice welcome message from melina your maiden",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def tarnished_arrived(interaction: discord.Interaction):
+    await interaction.response.send_message("Welcome Tarnished to the Lands between.")
+
+# 5 - Enhanced boss command with credit system
+@bot.tree.command(
+    name="i have defeated",
+    description="Tell melina which boss you have bested",
+    guild=discord.Object(id=GUILD_ID)
+)
+@app_commands.describe(
+    bosses="Which boss is it that you have bested?"
+)
+@app_commands.choices(bosses=[
+    app_commands.Choice(name="Margit", value="margit"),
+    app_commands.Choice(name="Godrick", value="godrick"),
+    app_commands.Choice(name="Rennala", value="rennala"),
+    app_commands.Choice(name="Radahn", value="radahn"),
+    app_commands.Choice(name="Morgott", value="morgott"),
+    app_commands.Choice(name="Fire Giant", value="firegiant"),
+    app_commands.Choice(name="God Skin Duo", value="godskinduo"),
+    app_commands.Choice(name="Maliketh", value="maliketh"),
+    app_commands.Choice(name="Gideon", value="gideon"),
+    app_commands.Choice(name="Godfrey", value="godfrey"),
+    app_commands.Choice(name="Radagon and Elden Beast", value="radabeast"),
+    app_commands.Choice(name="Divine Beast Dancing Lion", value="DBDL"),
+    app_commands.Choice(name="Rellana", value="rellana"),
+    app_commands.Choice(name="Golden Hippopotamus", value="goldenhippo"),
+    app_commands.Choice(name="Messmer", value="messmer"),
+    app_commands.Choice(name="Gaius", value="gaius"),
+    app_commands.Choice(name="Scadutree Avatar", value="scadutree"),
+    app_commands.Choice(name="Putrescent knight", value="putrescent"),
+    app_commands.Choice(name="Midra", value="midra"),
+    app_commands.Choice(name="Bayle", value="bayle"),
+    app_commands.Choice(name="Metyr", value="metyr"),
+    app_commands.Choice(name="Romina", value="romina"),
+    app_commands.Choice(name="Needle Knight Leda", value="leda"),
+    app_commands.Choice(name="Promised Consort Radahn", value="pcr")
+])
+async def bosses_command(interaction: discord.Interaction, bosses: str):
+    # Get the main response for the boss
+    boss_response = BOSS_RESPONSES.get(bosses, "A worthy opponent has fallen.")
+    
+    # Add a random credit message
+    credit = random.choice(GIVING_CREDIT)
+    
+    # Combine the messages
+    full_response = f"{boss_response} {credit}"
+    
+    await interaction.response.send_message(full_response)
+
+# 6 - Roll dice command
+@bot.tree.command(
+    name="roll_dice",
+    description="Roll a dice and see your fortune",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def roll_dice(interaction: discord.Interaction):
+    dice_result = randint(1, 6)
+    await interaction.response.send_message(f"You rolled a {dice_result}. Fortune favors you.")
+
+# Event handlers
+@bot.event
+async def on_ready():
     try:
-        response: str = get_response(user_message)
-        (
-            await message.author.send(response)
-            if is_private
-            else await message.channel.send(response)
-        )
+        # Sync commands only to the test server
+        synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
+        print(f"Synced {len(synced)} command(s) to the test server (ID: {GUILD_ID})")
+        print(f"Logged in as {bot.user}")
+        print(f"Connected to {len(bot.guilds)} guild(s)")
+        for guild in bot.guilds:
+            print(f"- {guild.name} (ID: {guild.id})")
+        print("Bot is ready!")
     except Exception as e:
-        print(e)
+        print(f"Error syncing commands: {e}")
 
-
-# Handling the startup for the App
-@client.event
-async def on_ready() -> None:
-    print(f"{client.user} is now running!")
-
-
-# Handling incoming messages
-@client.event
-async def on_message(message: Message) -> None:
-    if message.author == client.user:
+@bot.event
+async def on_message(message: Message):
+    if message.author == bot.user:
         return
 
-    username: str = str(message.author)
-    user_message: str = str(message.content)
-    channel: str = str(message.channel)
+    # Log messages
+    print(f"[{message.channel}] {message.author}: {message.content}")
+    
+    # Process commands
+    await bot.process_commands(message)
 
-    print(f'[{channel}] {username}: "{user_message}" ')
-    await send_message(message, user_message)
-
-
-# Main entry point
-def main() -> None:
-    client.run(TOKEN)
-
-
-main()
+# Run the bot
+if __name__ == "__main__":
+    try:
+        bot.run(TOKEN)
+    except Exception as e:
+        print(f"Error running bot: {e}")
