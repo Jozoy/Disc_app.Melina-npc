@@ -1,23 +1,24 @@
 import os
-import discord
+import asyncio
 import random
+import discord
 from typing import Final
-from discord.ext import commands
-from discord import Intents, Message, app_commands
 from dotenv import load_dotenv
-from random import choice, randint
+from discord import Intents, Interaction, Message, app_commands
+from discord.ext import commands
 
-# Loads the token from somewhere and Guild ID
+# Load environment variables
 load_dotenv(override=True)
 TOKEN: Final = os.getenv("DISCORD_TOKEN")
 
-# bot setup, the basics
-intents: Intents = Intents.default()
+# Configure bot intents
+intents = Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="m!", intents=intents)
+# Initialize bot with a command prefix and disable the default help command
+bot = commands.Bot(command_prefix="m!", intents=intents, help_command=None)
 
-# Main bosses with short responses
+# Constants for boss responses and credits
 BOSS_RESPONSES = {
     "margit": "Fell Omen, vanquished.",
     "godrick": "The Grafted is no more.",
@@ -45,7 +46,6 @@ BOSS_RESPONSES = {
     "pcr": "The Promised Consort falls beneath your might."
 }
 
-# Giving credit or append
 GIVING_CREDIT = [
     "Well done, Tarnished.",
     "You have my gratitude.",
@@ -59,62 +59,41 @@ GIVING_CREDIT = [
     "You have done well."
 ]
 
+# Event: Bot is ready
+@bot.event
+async def on_ready():
+    """Handles bot readiness and syncs application commands."""
+    try:
+        await bot.tree.sync()
+        print(f"Bot is logged in as {bot.user} and ready!")
+        print(f"Connected to {len(bot.guilds)} guild(s): {[guild.name for guild in bot.guilds]}")
+    except Exception as e:
+        print(f"Error syncing commands: {e}")
 
-# TEST 
-# Prefix command
-@bot.command()
-async def hello(ctx):
-    await ctx.send("Hello, Fellow member")
+# Event: Log messages and process commands
+@bot.event
+async def on_message(message: Message):
+    """Logs user messages and processes commands."""
+    if message.author == bot.user:
+        return
+    print(f"[{message.channel}] {message.author}: {message.content}")
+    await bot.process_commands(message)
 
-# Slash command TEST
-@bot.tree.command(
-    name="hello", 
-    description="melina greets you",
-)
-async def hello(interaction: discord.Interaction):
-    user_name = interaction.user.mention
-    await interaction.response.send_message(f"Greetings, {user_name} the Tarnished. ")
+# Command: Greet the user
+@bot.tree.command(name="greet", description="Receive greetings from Melina.")
+async def greet(interaction: Interaction):
+    """Sends a greeting message."""
+    await interaction.response.send_message(f"Greetings, {interaction.user.mention}. The Lands Between welcome you.")
 
-#1
-@bot.tree.command(
-    name="how are you", 
-    description="ask melina how her day is",
-)
-async def hru(interaction: discord.Interaction):
-    await interaction.response.send_message("I am doing good, thank you for asking Tarnished")
+# Command: Farewell message
+@bot.tree.command(name="farewell", description="Bid farewell to Melina.")
+async def farewell(interaction: Interaction):
+    """Sends a farewell message."""
+    await interaction.response.send_message("May your path be clear, Tarnished. Farewell.")
 
-#2
-@bot.tree.command(
-    name="are you there", 
-    description="is melina with you?",
-)
-async def are_you_there(interaction: discord.Interaction):
-    await interaction.response.send_message("I am here and with you Tarnished")
-
-# 3
-@bot.tree.command(
-    name="farewell", 
-    description="say your goodbye to melina your maiden",
-)
-async def farewell(interaction: discord.Interaction):
-    await interaction.response.send_message("May your path be clear and farewell.")
-
-# 4
-@bot.tree.command(
-    name="tarnished arrived", 
-    description="nice welcome message from melina your maiden",
-)
-async def tarnished_arrived(interaction: discord.Interaction):
-    await interaction.response.send_message("Welcome Tarnished to the Lands between.")
-
-# 5 - Enhanced boss command with credit system
-@bot.tree.command(
-    name="i have defeated",
-    description="Tell melina which boss you have bested",
-)
-@app_commands.describe(
-    bosses="Which boss is it that you have bested?"
-)
+# Command: Report defeated boss
+@bot.tree.command(name="i_have_defeated", description="Tell Melina which boss you have bested.")
+@app_commands.describe(bosses="Which boss is it that you have bested?")
 @app_commands.choices(bosses=[
     app_commands.Choice(name="Margit", value="margit"),
     app_commands.Choice(name="Godrick", value="godrick"),
@@ -133,7 +112,7 @@ async def tarnished_arrived(interaction: discord.Interaction):
     app_commands.Choice(name="Messmer", value="messmer"),
     app_commands.Choice(name="Gaius", value="gaius"),
     app_commands.Choice(name="Scadutree Avatar", value="scadutree"),
-    app_commands.Choice(name="Putrescent knight", value="putrescent"),
+    app_commands.Choice(name="Putrescent Knight", value="putrescent"),
     app_commands.Choice(name="Midra", value="midra"),
     app_commands.Choice(name="Bayle", value="bayle"),
     app_commands.Choice(name="Metyr", value="metyr"),
@@ -141,55 +120,37 @@ async def tarnished_arrived(interaction: discord.Interaction):
     app_commands.Choice(name="Needle Knight Leda", value="leda"),
     app_commands.Choice(name="Promised Consort Radahn", value="pcr")
 ])
-async def bosses_command(interaction: discord.Interaction, bosses: str):
-    # Get the main response for the boss
+async def defeated_bosses(interaction: Interaction, bosses: str):
+    """Responds to boss defeats with acknowledgment."""
     boss_response = BOSS_RESPONSES.get(bosses, "A worthy opponent has fallen.")
-    
-    # Add a random credit message
-    credit = random.choice(GIVING_CREDIT)
-    
-    # Combine the messages
-    full_response = f"{boss_response} {credit}"
-    
-    await interaction.response.send_message(full_response)
+    credit_message = random.choice(GIVING_CREDIT)
+    await interaction.response.send_message(f"{boss_response} {credit_message}")
 
-# 6 - Roll dice command
-@bot.tree.command(
-    name="roll_dice",
-    description="Roll a dice and see your fortune",
-)
-async def roll_dice(interaction: discord.Interaction):
-    dice_result = randint(1, 6)
-    await interaction.response.send_message(f"You rolled a {dice_result}. Fortune favors you.")
+# Command: Roll a dice
+@bot.tree.command(name="roll_dice", description="Roll a dice and test your fortune.")
+async def roll_dice(interaction: Interaction):
+    """Rolls a six-sided dice and returns the result."""
+    result = random.randint(1, 6)
+    await interaction.response.send_message(f"You rolled a {result}. Fortune smiles upon you!")
 
-# Event handlers
-@bot.event
-async def on_ready():
+# Main entry point
+async def main():
+    """Launches the bot."""
     try:
-        # Sync commands only to the test server
-        await bot.tree.sync()
-        print(f"Logged in as {bot.user}")
-        print(f"Connected to {len(bot.guilds)} guild(s)")
-        for guild in bot.guilds:
-            print(f"- {guild.name} (ID: {guild.id})")
-        print("Bot is ready!")
+        print("Launching Melina bot...")
+        await bot.start(TOKEN)
+    except discord.errors.LoginFailure:
+        print("Error: Invalid token. Please check your DISCORD_TOKEN in the .env file.")
     except Exception as e:
-        print(f"Error syncing commands: {e}")
-
-@bot.event
-async def on_message(message: Message):
-    if message.author == bot.user:
-        return
-
-    # Log messages
-    print(f"[{message.channel}] {message.author}: {message.content}")
-    
-    # Process commands
-    await bot.process_commands(message)
+        print(f"Unexpected error: {e}")
+    finally:
+        await bot.close()
 
 # Run the bot
 if __name__ == "__main__":
     try:
-        bot.run(TOKEN)
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Bot shutdown gracefully by user.")
     except Exception as e:
-        print(f"Error running bot: {e}")
+        print(f"Fatal error: {e}")
