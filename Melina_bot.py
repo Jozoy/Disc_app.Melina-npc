@@ -85,6 +85,18 @@ async def greet(interaction: Interaction):
     """Sends a greeting message."""
     await interaction.response.send_message(f"Greetings, {interaction.user.mention}. The Lands Between welcome you.")
 
+# Command: How are you?
+@bot.tree.command(name="how_are_you", description="Ask Melina how her day is.")
+async def how_are_you(interaction: Interaction):
+    """Responds with Melina's current state."""
+    await interaction.response.send_message("I am doing well, thank you for asking, Tarnished.")
+
+# Command: Are you there?
+@bot.tree.command(name="are_you_there", description="Check if Melina is with you.")
+async def are_you_there(interaction: Interaction):
+    """Confirms Melina's presence."""
+    await interaction.response.send_message("I am here, always with you, Tarnished.")
+
 # Command: Farewell message
 @bot.tree.command(name="farewell", description="Bid farewell to Melina.")
 async def farewell(interaction: Interaction):
