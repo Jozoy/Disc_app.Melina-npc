@@ -145,6 +145,13 @@ async def roll_dice(interaction: Interaction):
     result = random.randint(1, 6)
     await interaction.response.send_message(f"You rolled a {result}. Fortune smiles upon you!")
 
+# Command:  command showcase
+@bot.tree.command(name="help", description="Shows every command for melina.")
+async def help(interaction: Interaction):
+    showcase = bot.tree.command()
+    await interaction.response.send_message(showcase)
+
+
 # Main entry point
 async def main():
     """Launches the bot."""
